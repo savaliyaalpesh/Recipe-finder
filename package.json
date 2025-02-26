@@ -14,7 +14,6 @@
     "react-dom": "^18.2.0",
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.2.0",
-    "react-scripts": "^3.0.1",
     "swiper": "^11.2.4",
     "web-vitals": "^2.1.4"
   },
@@ -43,6 +42,7 @@
     ]
   },
   "devDependencies": {
-    "source-map-loader": "^5.0.0"
+    "source-map-loader": "^5.0.0",
+    "vite": "^6.2.0"
   }
 }
