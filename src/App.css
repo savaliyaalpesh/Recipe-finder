@@ -1,38 +1,32 @@
-.App {
-  text-align: center;
+@import url('https://fonts.googleapis.com/css2?family=Alexandria:wght@100..900&family=Delicious+Handrawn&family=Lora:ital,wght@0,400..700;1,400..700&family=Noticia+Text:ital,wght@0,400;0,700;1,400;1,700&family=Roboto+Slab:wght@100..900&display=swap');
+
+body {
+  font-family: "Lora", serif !important;
+  /* font-family: "Roboto Slab", serif; */
+  /* font-family: "Poppins", serif; */
+  background-color: #8db48e;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.no-scroll {
+  overflow: hidden;
+  height: 100vh;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.btn-text{
+  font-family: "Alexandria", serif !important;
+
+}
+.p-text {
+  font-family: "Delicious Handrawn", serif !important;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.text{
+  font-family: "Noticia Text", serif !important;
 }
 
-.App-link {
-  color: #61dafb;
+.carousel-image {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
