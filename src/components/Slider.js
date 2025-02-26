@@ -12,7 +12,7 @@ const RecipeSlider = () => {
   const [recipes, setRecipes] = useState([]);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
-  const [servings, setServings] = useState();
+  // const [servings, setServings] = useState();
   const swiperRef = useRef(null);
   const prevRef = useRef(null);
   const nextRef = useRef(null);
