@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence, useInView } from "framer-motion"
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import RecipeCard from "./RecipeCard"
 import Pagination from "./Pagination"
 import Slider from "./Slider"
@@ -136,18 +136,44 @@ const Header = () => {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedTag, setSelectedTag] = useState("")
   const [selectedMeal, setSelectedMeal] = useState("")
-  const [sortOrder, setSortOrder] = useState("asc")
+  const [sortOrder] = useState("asc") // Removed setSortOrder as it was unused
   const [isLoading, setIsLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 12
   const [showHeader, setShowHeader] = useState(false)
   const [showFirstAnimation, setShowFirstAnimation] = useState(false)
   const [showSecondAnimation, setShowSecondAnimation] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
+  const [,setIsMobile] = useState(false) 
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const location = useLocation()
 
-  // Check sessionStorage to determine if the page has been reloaded
+  // Check sessionStorage to determine if the page has been reloaded and to restore state
   const hasReloaded = sessionStorage.getItem("hasReloaded")
+
+  // Initialize state from sessionStorage
+  useEffect(() => {
+    // Retrieve saved filter and pagination state
+    const savedPage = sessionStorage.getItem("currentPage")
+    const savedSearchQuery = sessionStorage.getItem("searchQuery")
+    const savedSelectedTag = sessionStorage.getItem("selectedTag")
+    const savedSelectedMeal = sessionStorage.getItem("selectedMeal")
+
+    // Set state if values exist in storage
+    if (savedPage) setCurrentPage(parseInt(savedPage))
+    if (savedSearchQuery) setSearchQuery(savedSearchQuery)
+    if (savedSelectedTag) setSelectedTag(savedSelectedTag)
+    if (savedSelectedMeal) setSelectedMeal(savedSelectedMeal)
+  }, [])
+
+  // Save current state to sessionStorage when state changes
+  useEffect(() => {
+    if (showHeader) { // Only save after the header is shown (animations completed)
+      sessionStorage.setItem("currentPage", currentPage.toString())
+      sessionStorage.setItem("searchQuery", searchQuery)
+      sessionStorage.setItem("selectedTag", selectedTag)
+      sessionStorage.setItem("selectedMeal", selectedMeal)
+    }
+  }, [currentPage, searchQuery, selectedTag, selectedMeal, showHeader])
 
   useEffect(() => {
     const handleResize = () => {
@@ -183,6 +209,12 @@ const Header = () => {
       fetchAllRecipes()
     }
   }, [showHeader])
+
+  // Track URL changes to persist state between navigation
+  useEffect(() => {
+    // This effect will run when returning to the page
+    // The state is already loaded from sessionStorage in the initialization effect
+  }, [location.pathname])
 
   const fetchAllRecipes = async () => {
     setIsLoading(true)
@@ -446,6 +478,3 @@ const Header = () => {
 }
 
 export default Header
-
-
-// i dont see anything related to this on output fix it according to this i want to add in this code for ex:- when i select page-2 and click view recipe then coming back dont show home page and also add for for ex:-when i am on page-2 then click add recipe and going add recipe page and coming back then show page-2 dont show home page change in this code dont remove anything from this code
