@@ -252,9 +252,3 @@ const Carousel = () => {
 };
 
 export default Carousel;
-
-
-// Error Type: Build script returned a non-zero exit code: 2
-// Error Cause: The build failed due to a user error: specifically, warnings treated as errors due to process.env.CI being set to true. This led to the build failure at the eslint stage with several warnings treated as errors.
-// Solution: To resolve the build failure, you need to address the warnings in the codebase. Specifically:
-// In src/components/Carousel.js, address the missing dependencies in the useEffect hooks for scrollRight at Line 103 and currentIndex at Line 150.

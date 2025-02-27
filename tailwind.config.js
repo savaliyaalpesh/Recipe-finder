@@ -25,6 +25,7 @@ export default {
         mutedgold: "#b39b77", // (Dividers, section separators, subtle highlights)
         dustyrose: "#b07d62", // (CTA buttons, important sections)
         shadowred: "#8b0000", // (Image shadow for Recipe Detail)
+        skeleton :"#faf8f0",
 
         // Carousel
         bodybackground: "#8db48e", // (Muted Green - Body Background)

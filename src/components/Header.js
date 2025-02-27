@@ -5,7 +5,7 @@ import RecipeCard from "./RecipeCard"
 import Pagination from "./Pagination"
 import Slider from "./Slider"
 import Logo from "../Img/logo.png"
-import Carousel from "./Carousel"
+import Carousel from "./Carousel" 
 
 // Scroll animation component with overflow handling
 const ScrollAnimatedItem = ({ children, direction = "left", delay = 0 }) => {
@@ -42,6 +42,24 @@ const ScrollAnimatedItem = ({ children, direction = "left", delay = 0 }) => {
     </div>
   )
 }
+
+// Skeleton loader component for recipe cards
+const SkeletonCard = () => {
+  return (
+    <div className="bg-white rounded-lg shadow-md overflow-hidden h-96 animate-pulse">
+      <div className="h-48 bg-gray-200"></div>
+      <div className="p-4 space-y-3">
+        <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+        <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+        <div className="flex space-x-2 mt-2">
+          <div className="h-6 bg-gray-200 rounded w-16"></div>
+          <div className="h-6 bg-gray-200 rounded w-16"></div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const AnimatedIntro = ({ onComplete }) => {
   return (
@@ -136,16 +154,20 @@ const Header = () => {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedTag, setSelectedTag] = useState("")
   const [selectedMeal, setSelectedMeal] = useState("")
-  const [sortOrder] = useState("asc") // Removed setSortOrder as it was unused
+  const [sortOrder, setSortOrder] = useState("asc") // Now using setSortOrder
   const [isLoading, setIsLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 12
   const [showHeader, setShowHeader] = useState(false)
   const [showFirstAnimation, setShowFirstAnimation] = useState(false)
   const [showSecondAnimation, setShowSecondAnimation] = useState(false)
-  const [,setIsMobile] = useState(false) 
+  const [, setIsMobile] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const location = useLocation()
+  
+  // Added state for recipes from Home component
+  const [, setRecipes] = useState([])
+  const [, setLoading] = useState(true)
 
   // Check sessionStorage to determine if the page has been reloaded and to restore state
   const hasReloaded = sessionStorage.getItem("hasReloaded")
@@ -157,12 +179,14 @@ const Header = () => {
     const savedSearchQuery = sessionStorage.getItem("searchQuery")
     const savedSelectedTag = sessionStorage.getItem("selectedTag")
     const savedSelectedMeal = sessionStorage.getItem("selectedMeal")
+    const savedSortOrder = sessionStorage.getItem("sortOrder")
 
     // Set state if values exist in storage
     if (savedPage) setCurrentPage(parseInt(savedPage))
     if (savedSearchQuery) setSearchQuery(savedSearchQuery)
     if (savedSelectedTag) setSelectedTag(savedSelectedTag)
     if (savedSelectedMeal) setSelectedMeal(savedSelectedMeal)
+    if (savedSortOrder) setSortOrder(savedSortOrder)
   }, [])
 
   // Save current state to sessionStorage when state changes
@@ -172,8 +196,9 @@ const Header = () => {
       sessionStorage.setItem("searchQuery", searchQuery)
       sessionStorage.setItem("selectedTag", selectedTag)
       sessionStorage.setItem("selectedMeal", selectedMeal)
+      sessionStorage.setItem("sortOrder", sortOrder)
     }
-  }, [currentPage, searchQuery, selectedTag, selectedMeal, showHeader])
+  }, [currentPage, searchQuery, selectedTag, selectedMeal, sortOrder, showHeader])
 
   useEffect(() => {
     const handleResize = () => {
@@ -207,6 +232,8 @@ const Header = () => {
   useEffect(() => {
     if (showHeader) {
       fetchAllRecipes()
+      // Added fetchRecipes call
+      fetchRecipes()
     }
   }, [showHeader])
 
@@ -216,21 +243,45 @@ const Header = () => {
     // The state is already loaded from sessionStorage in the initialization effect
   }, [location.pathname])
 
-  const fetchAllRecipes = async () => {
-    setIsLoading(true)
+  // Added fetchRecipes function from Home component
+  const fetchRecipes = async () => {
     try {
-      const response = await fetch(
-        `https://dummyjson.com/recipes?limit=1000&select=name,image,tags,mealType,id,prepTimeMinutes,cookTimeMinutes,caloriesPerServing`,
-      )
-      const data = await response.json()
-      setAllRecipes(data.recipes)
-      setFilteredRecipes(data.recipes)
+      // Fetch from API
+      const response = await fetch('https://dummyjson.com/recipes');
+      const data = await response.json();
+      
+      // Get locally added recipes
+      const localRecipes = JSON.parse(localStorage.getItem('addedRecipes') || '[]');
+      
+      // Combine API recipes with locally added ones
+      setRecipes([...localRecipes, ...data.recipes]);
     } catch (error) {
-      console.error("Error fetching recipes:", error)
+      console.error('Error fetching recipes:', error);
     } finally {
-      setIsLoading(false)
+      setLoading(false);
     }
-  }
+  };
+
+ const fetchAllRecipes = async () => {
+    setIsLoading(true);
+    try {
+        const response = await fetch('https://dummyjson.com/recipes?limit=1000');
+        const data = await response.json();
+
+        // Get locally added recipes
+        const localRecipes = JSON.parse(localStorage.getItem('addedRecipes') || '[]');
+
+        // Combine API recipes with locally added ones
+        const combinedRecipes = [...localRecipes, ...data.recipes];
+        setAllRecipes(combinedRecipes);
+        setFilteredRecipes(combinedRecipes);
+    } catch (error) {
+        console.error('Error fetching recipes:', error);
+    } finally {
+        setIsLoading(false);
+    }
+};
+
 
   // Handle search input change
   const handleSearchChange = (e) => {
@@ -248,6 +299,12 @@ const Header = () => {
   const handleMealChange = (e) => {
     setSelectedMeal(e.target.value)
     setCurrentPage(1) // Reset to first page when filtering
+  }
+
+  // Handle sort order change
+  const toggleSortOrder = () => {
+    setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+    setCurrentPage(1) // Reset to first page when sorting
   }
 
   const filterAndSortRecipes = useCallback(() => {
@@ -353,6 +410,24 @@ const Header = () => {
                       ))}
                     </select>
 
+                    <button
+                      onClick={toggleSortOrder}
+                      className="bg-deepforestgreen hover:bg-heading text-white py-2 px-4 rounded-lg border border-deepforestgreen transition whitespace-nowrap flex-shrink-0 btn-text"
+                    >
+                      <motion.div
+                        whileHover="hover"
+                        whileTap="tap"
+                        variants={{
+                          hover: { scale: 1.05, opacity: 0.9, transition: { duration: 0.3, ease: "easeOut" } },
+                          tap: { scale: 0.95 }
+                        }}
+                        className="flex items-center"
+                      >
+                        <span>Sort: {sortOrder === "asc" ? "A-Z" : "Z-A"}</span>
+
+                      </motion.div>
+                    </button>
+
                     <Link
                       to="/add-recipe"
                       className="bg-deepforestgreen text-white py-2 px-4 rounded-lg hover:bg-green-700 transition whitespace-nowrap flex-shrink-0 ml-4 btn-text"
@@ -412,6 +487,14 @@ const Header = () => {
                       ))}
                     </select>
 
+                    <button
+                      onClick={toggleSortOrder}
+                      className="bg-deepforestgreen hover:bg-heading text-white py-2 px-4 rounded-lg border border-deepforestgreen transition whitespace-nowrap flex-shrink-0 btn-text"
+                    >
+                      <span>Sort: {sortOrder === "asc" ? "A-Z" : "Z-A"}</span>
+
+                    </button>
+
                     <Link
                       to="/add-recipe"
                       onClick={() => setIsMenuOpen(false)}
@@ -435,8 +518,16 @@ const Header = () => {
             )}
 
             {isLoading ? (
-              <div className="flex justify-center items-center min-h-[200px]">
-                <p className="text-center">Loading recipes...</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4 md:px-8 lg:px-12 py-8">
+                {[...Array(6)].map((_, index) => (
+                  <ScrollAnimatedItem
+                    key={index}
+                    direction={index % 2 === 0 ? "left" : "right"}
+                    delay={index * 0.05}
+                  >
+                    <SkeletonCard />
+                  </ScrollAnimatedItem>
+                ))}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4 md:px-8 lg:px-12 py-8">

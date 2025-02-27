@@ -10,7 +10,8 @@ function App() {
       <div className='bg-[#8db48e]'>
         <Routes>
           <Route path="/" element={<Header />} />
-          <Route path="/recipe/:id" element={<RecipeDetail />} />
+          <Route path="/recipe/:id" element={<RecipeDetail/>} />
+          {/* <Route path="/recipe/:id" element={<RecipeDetail localRecipes={recipes} />} /> */}
           <Route path="/add-recipe" element={<AddRecipe />} />
         </Routes>
       </div>

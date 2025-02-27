@@ -31,10 +31,58 @@ const image = {
   }
 };
 
+// Skeleton component for loading state
+const RecipeSkeleton = () => {
+  return (
+    <div className="min-h-screen bg-softcream animate-pulse">
+      <div className="flex items-center p-4 border-b border-mutedgold">
+        <div className="h-8 bg-skeleton rounded w-3/4"></div>
+        <div className="h-8 bg-skeleton rounded w-16 ml-auto"></div>
+      </div>
 
+      <div className="container mx-auto px-2 sm:px-4 py-4">
+        <div className="flex justify-center mb-6">
+          <div className="w-full max-w-md h-64 bg-skeleton rounded-lg shadow-lg"></div>
+        </div>
+
+        <div className="h-6 bg-skeleton rounded w-1/2 mb-4"></div>
+
+        <div className="mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-2">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="py-1 border-b border-shadowred sm:border-b pb-2">
+                <div className="h-6 bg-skeleton rounded w-3/4"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <div className="h-8 bg-skeleton rounded w-1/2 mb-4"></div>
+          <div className="space-y-2">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-6 bg-skeleton rounded w-full"></div>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <div className="h-8 bg-skeleton rounded w-1/2 mb-4"></div>
+          <div className="space-y-3">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-6 bg-skeleton rounded w-full"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const RecipeDetail = () => {
   const [recipe, setRecipe] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [isUserAdded, setIsUserAdded] = useState(false);
   const { id } = useParams();
   const navigate = useNavigate();
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -53,19 +101,57 @@ const RecipeDetail = () => {
 
   useEffect(() => {
     const fetchRecipe = async () => {
+      setLoading(true);
       try {
-        const response = await fetch(`https://dummyjson.com/recipes/${id}`);
-        const data = await response.json();
-        setRecipe(data);
+        // First check if this is a locally added recipe
+        const addedRecipes = JSON.parse(localStorage.getItem('addedRecipes') || '[]');
+        const localRecipe = addedRecipes.find(recipe => recipe.id.toString() === id.toString());
+        
+        if (localRecipe) {
+          // Process local recipe to ensure data format is consistent
+          setIsUserAdded(true);
+          setRecipe({
+            ...localRecipe,
+            ingredients: Array.isArray(localRecipe.ingredients) 
+              ? localRecipe.ingredients 
+              : typeof localRecipe.ingredients === 'string' 
+                ? localRecipe.ingredients.split('\n') 
+                : [],
+            instructions: Array.isArray(localRecipe.instructions) 
+              ? localRecipe.instructions 
+              : typeof localRecipe.instructions === 'string' 
+                ? localRecipe.instructions.split('\n') 
+                : [],
+            tags: Array.isArray(localRecipe.tags) 
+              ? localRecipe.tags 
+              : typeof localRecipe.tags === 'string' 
+                ? localRecipe.tags.split(',').map(tag => tag.trim()) 
+                : [],
+            cuisine: localRecipe.cuisine || 'Not specified',
+            servings: localRecipe.servings || 4
+          });
+        } else {
+          // If not in localStorage, fetch from API
+          setIsUserAdded(false);
+          const response = await fetch(`https://dummyjson.com/recipes/${id}`);
+          const data = await response.json();
+          setRecipe(data);
+        }
       } catch (error) {
         console.error("Error fetching recipe:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchRecipe();
   }, [id]);
 
+  if (loading) {
+    return <RecipeSkeleton />;
+  }
+
   if (!recipe) {
-    return <div className="text-center text-lg sm:text-xl mt-10">Loading...</div>;
+    return <div className="text-center text-lg sm:text-xl mt-10">Recipe not found</div>;
   }
 
   return (
@@ -103,7 +189,6 @@ const RecipeDetail = () => {
             </span>
           )}
         </button>
-
       </motion.div>
 
       <div className="container mx-auto px-2 sm:px-4 py-4">
@@ -130,26 +215,30 @@ const RecipeDetail = () => {
           initial="hidden"
           animate="visible"
           exit="exit" className="text-lg sm:text-xl mb-4 text-charcoalgray">
-          Cooking Time: {recipe.prepTimeMinutes + recipe.cookTimeMinutes} minutes
+          Cooking Time: {(parseInt(recipe.prepTimeMinutes) || 0) + (parseInt(recipe.cookTimeMinutes) || 0)} minutes
         </motion.p>
 
         <div className="mb-6">
-          <motion.div variants={variants}
+          <motion.div 
+            variants={variants}
             initial="hidden"
             animate="visible"
-            exit="exit" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-2 text-muteddarkgreen text-lg font-semibold">
-            <div className="py-1 border-b sm:border-b pb-2">
+            exit="exit" 
+            className={`grid grid-cols-1 sm:grid-cols-2 ${isUserAdded ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-x-4 gap-y-2 text-muteddarkgreen text-lg font-semibold`}>
+            <div className="py-1 border-b border-shadowred sm:border-b pb-2">
               <span className="font-semibold">Calories:</span> {recipe.caloriesPerServing}
             </div>
-            <div className="py-1 border-b sm:border-b pb-2">
+            <div className="py-1 border-b border-shadowred sm:border-b pb-2">
               <span className="font-semibold">Meal Type:</span> {recipe.mealType}
             </div>
-            <div className="py-1 border-b sm:border-b pb-2">
+            <div className="py-1 border-b border-shadowred sm:border-b pb-2">
               <span className="font-semibold">Category:</span> {Array.isArray(recipe.tags) ? recipe.tags.join(', ') : recipe.tags}
             </div>
-            <div className="py-1 border-b sm:border-b pb-2">
-              <span className="font-semibold">Origin:</span> {recipe.cuisine}
-            </div>
+            {!isUserAdded && (
+              <div className="py-1 border-b border-shadowred sm:border-b pb-2">
+                <span className="font-semibold">Origin:</span> {recipe.cuisine || 'Not specified'}
+              </div>
+            )}
           </motion.div>
         </div>
 
@@ -162,11 +251,11 @@ const RecipeDetail = () => {
           exit="exit"
         >
           <h2 className="text-xl sm:text-2xl font-bold text-darkbrown mb-4">
-            Ingredients for {recipe.servings} servings
+            Ingredients for {recipe.servings || 4} servings
           </h2>
 
           <motion.ul className="list-disc pl-5 text-slategray space-y-2">
-            {recipe.ingredients.map((ingredient, index) => (
+            {Array.isArray(recipe.ingredients) && recipe.ingredients.map((ingredient, index) => (
               <motion.li key={index} className="text-base sm:text-lg" variants={variants}>
                 {ingredient}
               </motion.li>
@@ -181,11 +270,11 @@ const RecipeDetail = () => {
           animate="visible"
           exit="exit">
           <h2 className="text-xl sm:text-2xl font-bold text-darkbrown mb-4">
-            Instructions for {recipe.servings} servings
+            Instructions for {recipe.servings || 4} servings
           </h2>
 
           <motion.ol className="list-decimal pl-5 marker:text-cyan-900 text-slategray space-y-3">
-            {recipe.instructions.map((instruction, index) => (
+            {Array.isArray(recipe.instructions) && recipe.instructions.map((instruction, index) => (
               <motion.li key={index} className="text-base sm:text-lg" variants={variants}>{instruction}</motion.li>
             ))}
           </motion.ol>
