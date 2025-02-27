@@ -348,19 +348,27 @@ const Header = () => {
   const shouldShowSliderAndCarousel = currentPage === 1 && !isFiltered
 
   const MenuButton = () => (
-    <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="block lg:hidden z-50 " aria-label="Toggle menu">
-      <motion.div className="w-6 h-5 flex flex-col justify-between ">
-        <motion.span
-          animate={isMenuOpen ? { rotate: 45, y: 9 } : { rotate: 0, y: 0 }}
-          className="w-full h-0.5 bg-green-900 block origin-left "
-        />
-        <motion.span animate={isMenuOpen ? { opacity: 0 } : { opacity: 1 }} className="w-full h-0.5 bg-green-900 block" />
-        <motion.span
-          animate={isMenuOpen ? { rotate: -45, y: -9 } : { rotate: 0, y: 0 }}
-          className="w-full h-0.5 bg-green-900 block origin-left"
-        />
-      </motion.div>
-    </button>
+    <button
+  onClick={() => setIsMenuOpen(!isMenuOpen)}
+  className="block lg:hidden z-50"
+  aria-label="Toggle menu"
+>
+  <motion.div className="w-4 h-4 flex flex-col justify-between">
+    <motion.span
+      animate={isMenuOpen ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
+      className="w-full h-0.5 bg-green-900 block origin-left"
+    />
+    <motion.span
+      animate={isMenuOpen ? { opacity: 0 } : { opacity: 1 }}
+      className="w-full h-0.5 bg-green-900 block"
+    />
+    <motion.span
+      animate={isMenuOpen ? { rotate: -45, y: -6 } : { rotate: 0, y: 0 }}
+      className="w-full h-0.5 bg-green-900 block origin-left"
+    />
+  </motion.div>
+</button>
+
   )
 
   return (
@@ -450,62 +458,83 @@ const Header = () => {
             </div>
 
             {/* Mobile Menu */}
-            <AnimatePresence>
-              {isMenuOpen && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="lg:hidden bg-[#8db48e] px-4 pb-4"
-                >
-                  <div className="flex flex-col gap-4">
-                    <input
-                      type="search"
-                      placeholder="Search recipes..."
-                      value={searchQuery}
-                      onChange={handleSearchChange}
-                      className="w-full p-2 border rounded focus:outline-blue-700"
-                    />
+            {/* Mobile Menu */}
+<AnimatePresence>
+  {isMenuOpen && (
+    <motion.div
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: "auto" }}
+      exit={{ opacity: 0, height: 0 }}
+      className="lg:hidden bg-[#8db48e] px-4 pb-4"
+    >
+      <div className="flex flex-col gap-4">
+        <input
+          type="search"
+          placeholder="Search recipes..."
+          value={searchQuery}
+          onChange={(e) => handleSearchChange(e)} // Allow normal search input
+          onKeyDown={(e) => {
+            if (e.key === "Enter") setIsMenuOpen(false); // Close menu only on Enter key
+          }}
+          className="w-full p-2 border rounded focus:outline-blue-700"
+        />
 
-                    <select value={selectedTag} onChange={handleTagChange} className="w-full p-2 border rounded">
-                      <option value="">All Tags</option>
-                      {Array.from(new Set(allRecipes.flatMap((r) => r.tags))).map((tag) => (
-                        <option key={tag} value={tag}>
-                          {tag}
-                        </option>
-                      ))}
-                    </select>
+        <select
+          value={selectedTag}
+          onChange={(e) => {
+            handleTagChange(e);
+            setIsMenuOpen(false);
+          }}
+          className="w-full p-2 border rounded"
+        >
+          <option value="">All Tags</option>
+          {Array.from(new Set(allRecipes.flatMap((r) => r.tags))).map((tag) => (
+            <option key={tag} value={tag}>
+              {tag}
+            </option>
+          ))}
+        </select>
 
-                    <select value={selectedMeal} onChange={handleMealChange} className="w-full p-2 border rounded">
-                      <option value="">All Meal Types</option>
-                      {Array.from(
-                        new Set(allRecipes.flatMap((r) => (Array.isArray(r.mealType) ? r.mealType : [r.mealType]))),
-                      ).map((meal) => (
-                        <option key={meal} value={meal}>
-                          {meal}
-                        </option>
-                      ))}
-                    </select>
+        <select
+          value={selectedMeal}
+          onChange={(e) => {
+            handleMealChange(e);
+            setIsMenuOpen(false);
+          }}
+          className="w-full p-2 border rounded"
+        >
+          <option value="">All Meal Types</option>
+          {Array.from(
+            new Set(allRecipes.flatMap((r) => (Array.isArray(r.mealType) ? r.mealType : [r.mealType]))),
+          ).map((meal) => (
+            <option key={meal} value={meal}>
+              {meal}
+            </option>
+          ))}
+        </select>
 
-                    <button
-                      onClick={toggleSortOrder}
-                      className="bg-deepforestgreen hover:bg-heading text-white py-2 px-4 rounded-lg border border-deepforestgreen transition whitespace-nowrap flex-shrink-0 btn-text"
-                    >
-                      <span>Sort: {sortOrder === "asc" ? "A-Z" : "Z-A"}</span>
+        <button
+          onClick={() => {
+            toggleSortOrder();
+            setIsMenuOpen(false);
+          }}
+          className="bg-deepforestgreen hover:bg-heading text-white py-2 px-4 rounded-lg border border-deepforestgreen transition whitespace-nowrap flex-shrink-0 btn-text"
+        >
+          <span>Sort: {sortOrder === "asc" ? "A-Z" : "Z-A"}</span>
+        </button>
 
-                    </button>
+        <Link
+          to="/add-recipe"
+          onClick={() => setIsMenuOpen(false)}
+          className="lg:hidden bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition text-center"
+        >
+          Add Recipe
+        </Link>
+      </div>
+    </motion.div>
+  )}
+</AnimatePresence>
 
-                    <Link
-                      to="/add-recipe"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="lg:hidden bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition text-center"
-                    >
-                      Add Recipe
-                    </Link>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </header>
 
           <div className="mt-[100px]">
