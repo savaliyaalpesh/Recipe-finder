@@ -147,7 +147,7 @@ const RecipeCard = ({ recipe, loading }) => {
           <div className="bg-white p-4 rounded-lg shadow-lg max-w-xs w-full">
             <h3 className="text-lg font-semibold text-darkbluegray mb-2">Confirm Delete</h3>
             <p className="text-sm text-gray-600 mb-4">
-              Are you sure you want to delete "{recipe.name}"? This action cannot be undone.
+              Are you sure you want to delete "{recipe.name} Recipe"? This action cannot be undone.
             </p>
             <div className="flex justify-end gap-2">
               <button
