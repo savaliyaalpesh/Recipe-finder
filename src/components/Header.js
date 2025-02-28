@@ -5,7 +5,7 @@ import RecipeCard from "./RecipeCard"
 import Pagination from "./Pagination"
 import Slider from "./Slider"
 import Logo from "../Img/logo.png"
-import Carousel from "./Carousel" 
+import Carousel from "./Carousel"
 
 // Scroll animation component with overflow handling
 const ScrollAnimatedItem = ({ children, direction = "left", delay = 0 }) => {
@@ -164,7 +164,7 @@ const Header = () => {
   const [, setIsMobile] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const location = useLocation()
-  
+
   // Added state for recipes from Home component
   const [, setRecipes] = useState([])
   const [, setLoading] = useState(true)
@@ -249,10 +249,10 @@ const Header = () => {
       // Fetch from API
       const response = await fetch('https://dummyjson.com/recipes');
       const data = await response.json();
-      
+
       // Get locally added recipes
       const localRecipes = JSON.parse(localStorage.getItem('addedRecipes') || '[]');
-      
+
       // Combine API recipes with locally added ones
       setRecipes([...localRecipes, ...data.recipes]);
     } catch (error) {
@@ -262,25 +262,25 @@ const Header = () => {
     }
   };
 
- const fetchAllRecipes = async () => {
+  const fetchAllRecipes = async () => {
     setIsLoading(true);
     try {
-        const response = await fetch('https://dummyjson.com/recipes?limit=1000');
-        const data = await response.json();
+      const response = await fetch('https://dummyjson.com/recipes?limit=1000');
+      const data = await response.json();
 
-        // Get locally added recipes
-        const localRecipes = JSON.parse(localStorage.getItem('addedRecipes') || '[]');
+      // Get locally added recipes
+      const localRecipes = JSON.parse(localStorage.getItem('addedRecipes') || '[]');
 
-        // Combine API recipes with locally added ones
-        const combinedRecipes = [...localRecipes, ...data.recipes];
-        setAllRecipes(combinedRecipes);
-        setFilteredRecipes(combinedRecipes);
+      // Combine API recipes with locally added ones
+      const combinedRecipes = [...localRecipes, ...data.recipes];
+      setAllRecipes(combinedRecipes);
+      setFilteredRecipes(combinedRecipes);
     } catch (error) {
-        console.error('Error fetching recipes:', error);
+      console.error('Error fetching recipes:', error);
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
-};
+  };
 
 
   // Handle search input change
@@ -349,25 +349,25 @@ const Header = () => {
 
   const MenuButton = () => (
     <button
-  onClick={() => setIsMenuOpen(!isMenuOpen)}
-  className="block lg:hidden z-50"
-  aria-label="Toggle menu"
->
-  <motion.div className="w-4 h-4 flex flex-col justify-between">
-    <motion.span
-      animate={isMenuOpen ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
-      className="w-full h-0.5 bg-green-900 block origin-left"
-    />
-    <motion.span
-      animate={isMenuOpen ? { opacity: 0 } : { opacity: 1 }}
-      className="w-full h-0.5 bg-green-900 block"
-    />
-    <motion.span
-      animate={isMenuOpen ? { rotate: -45, y: -6 } : { rotate: 0, y: 0 }}
-      className="w-full h-0.5 bg-green-900 block origin-left"
-    />
-  </motion.div>
-</button>
+      onClick={() => setIsMenuOpen(!isMenuOpen)}
+      className="block xl:hidden z-50"
+      aria-label="Toggle menu"
+    >
+      <motion.div className="w-4 h-4 flex flex-col justify-between">
+        <motion.span
+          animate={isMenuOpen ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
+          className="w-full h-0.5 bg-green-900 block origin-left"
+        />
+        <motion.span
+          animate={isMenuOpen ? { opacity: 0 } : { opacity: 1 }}
+          className="w-full h-0.5 bg-green-900 block"
+        />
+        <motion.span
+          animate={isMenuOpen ? { rotate: -45, y: -6 } : { rotate: 0, y: 0 }}
+          className="w-full h-0.5 bg-green-900 block origin-left"
+        />
+      </motion.div>
+    </button>
 
   )
 
@@ -388,7 +388,7 @@ const Header = () => {
                 <MenuButton />
 
                 {/* Desktop Navigation */}
-                <div className="hidden lg:flex items-center gap-4 flex-1">
+                <div className="hidden xl:flex items-center gap-4 flex-1">
                   <div className="flex-1 flex items-center gap-4 justify-end">
                     <input
                       type="search"
@@ -458,82 +458,81 @@ const Header = () => {
             </div>
 
             {/* Mobile Menu */}
-            {/* Mobile Menu */}
-<AnimatePresence>
-  {isMenuOpen && (
-    <motion.div
-      initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: "auto" }}
-      exit={{ opacity: 0, height: 0 }}
-      className="lg:hidden bg-[#8db48e] px-4 pb-4"
-    >
-      <div className="flex flex-col gap-4">
-        <input
-          type="search"
-          placeholder="Search recipes..."
-          value={searchQuery}
-          onChange={(e) => handleSearchChange(e)} // Allow normal search input
-          onKeyDown={(e) => {
-            if (e.key === "Enter") setIsMenuOpen(false); // Close menu only on Enter key
-          }}
-          className="w-full p-2 border rounded focus:outline-blue-700"
-        />
+            <AnimatePresence>
+              {isMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="xl:hidden bg-[#8db48e] px-4 pb-4"
+                >
+                  <div className="flex flex-col gap-4">
+                    <input
+                      type="search"
+                      placeholder="Search recipes..."
+                      value={searchQuery}
+                      onChange={(e) => handleSearchChange(e)} // Allow normal search input
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") setIsMenuOpen(false); // Close menu only on Enter key
+                      }}
+                      className="w-full p-2 border rounded focus:outline-blue-700"
+                    />
 
-        <select
-          value={selectedTag}
-          onChange={(e) => {
-            handleTagChange(e);
-            setIsMenuOpen(false);
-          }}
-          className="w-full p-2 border rounded"
-        >
-          <option value="">All Tags</option>
-          {Array.from(new Set(allRecipes.flatMap((r) => r.tags))).map((tag) => (
-            <option key={tag} value={tag}>
-              {tag}
-            </option>
-          ))}
-        </select>
+                    <select
+                      value={selectedTag}
+                      onChange={(e) => {
+                        handleTagChange(e);
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full p-2 border rounded"
+                    >
+                      <option value="">All Tags</option>
+                      {Array.from(new Set(allRecipes.flatMap((r) => r.tags))).map((tag) => (
+                        <option key={tag} value={tag}>
+                          {tag}
+                        </option>
+                      ))}
+                    </select>
 
-        <select
-          value={selectedMeal}
-          onChange={(e) => {
-            handleMealChange(e);
-            setIsMenuOpen(false);
-          }}
-          className="w-full p-2 border rounded"
-        >
-          <option value="">All Meal Types</option>
-          {Array.from(
-            new Set(allRecipes.flatMap((r) => (Array.isArray(r.mealType) ? r.mealType : [r.mealType]))),
-          ).map((meal) => (
-            <option key={meal} value={meal}>
-              {meal}
-            </option>
-          ))}
-        </select>
+                    <select
+                      value={selectedMeal}
+                      onChange={(e) => {
+                        handleMealChange(e);
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full p-2 border rounded"
+                    >
+                      <option value="">All Meal Types</option>
+                      {Array.from(
+                        new Set(allRecipes.flatMap((r) => (Array.isArray(r.mealType) ? r.mealType : [r.mealType]))),
+                      ).map((meal) => (
+                        <option key={meal} value={meal}>
+                          {meal}
+                        </option>
+                      ))}
+                    </select>
 
-        <button
-          onClick={() => {
-            toggleSortOrder();
-            setIsMenuOpen(false);
-          }}
-          className="bg-deepforestgreen hover:bg-heading text-white py-2 px-4 rounded-lg border border-deepforestgreen transition whitespace-nowrap flex-shrink-0 btn-text"
-        >
-          <span>Sort: {sortOrder === "asc" ? "A-Z" : "Z-A"}</span>
-        </button>
+                    <button
+                      onClick={() => {
+                        toggleSortOrder();
+                        setIsMenuOpen(false);
+                      }}
+                      className="bg-deepforestgreen hover:bg-heading text-white py-2 px-4 rounded-lg border border-deepforestgreen transition whitespace-nowrap flex-shrink-0 btn-text"
+                    >
+                      <span>Sort: {sortOrder === "asc" ? "A-Z" : "Z-A"}</span>
+                    </button>
 
-        <Link
-          to="/add-recipe"
-          onClick={() => setIsMenuOpen(false)}
-          className="lg:hidden bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition text-center"
-        >
-          Add Recipe
-        </Link>
-      </div>
-    </motion.div>
-  )}
-</AnimatePresence>
+                    <Link
+                      to="/add-recipe"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="xl:hidden bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition text-center"
+                    >
+                      Add Recipe
+                    </Link>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
           </header>
 
@@ -598,3 +597,5 @@ const Header = () => {
 }
 
 export default Header
+
+// add in this code once a press enter when user search then blank search bar ,dont remove anything from this code write whole code
