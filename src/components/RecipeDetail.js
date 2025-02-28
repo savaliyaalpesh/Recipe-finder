@@ -79,6 +79,38 @@ const RecipeSkeleton = () => {
   );
 };
 
+// Helper function to process text arrays and remove empty entries
+const processTextArray = (data) => {
+  if (Array.isArray(data)) {
+    return data
+      .map(item => item.trim())
+      .filter(item => item.length > 0);
+  }
+  if (typeof data === 'string') {
+    return data
+      .split('\n')
+      .map(item => item.trim())
+      .filter(item => item.length > 0);
+  }
+  return [];
+};
+
+// Helper function to process comma-separated tags
+const processTags = (tags) => {
+  if (Array.isArray(tags)) {
+    return tags
+      .map(tag => tag.trim())
+      .filter(tag => tag.length > 0);
+  }
+  if (typeof tags === 'string') {
+    return tags
+      .split(',')
+      .map(tag => tag.trim())
+      .filter(tag => tag.length > 0);
+  }
+  return [];
+};
+
 const RecipeDetail = () => {
   const [recipe, setRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -112,22 +144,11 @@ const RecipeDetail = () => {
           setIsUserAdded(true);
           setRecipe({
             ...localRecipe,
-            ingredients: Array.isArray(localRecipe.ingredients) 
-              ? localRecipe.ingredients 
-              : typeof localRecipe.ingredients === 'string' 
-                ? localRecipe.ingredients.split('\n') 
-                : [],
-            instructions: Array.isArray(localRecipe.instructions) 
-              ? localRecipe.instructions 
-              : typeof localRecipe.instructions === 'string' 
-                ? localRecipe.instructions.split('\n') 
-                : [],
-            tags: Array.isArray(localRecipe.tags) 
-              ? localRecipe.tags 
-              : typeof localRecipe.tags === 'string' 
-                ? localRecipe.tags.split(',').map(tag => tag.trim()) 
-                : [],
-            cuisine: localRecipe.cuisine || 'Not specified',
+            name: localRecipe.name.trim(),
+            ingredients: processTextArray(localRecipe.ingredients),
+            instructions: processTextArray(localRecipe.instructions),
+            tags: processTags(localRecipe.tags),
+            cuisine: localRecipe.cuisine ? localRecipe.cuisine.trim() : 'Not specified',
             servings: localRecipe.servings || 4
           });
         } else {
@@ -135,7 +156,14 @@ const RecipeDetail = () => {
           setIsUserAdded(false);
           const response = await fetch(`https://dummyjson.com/recipes/${id}`);
           const data = await response.json();
-          setRecipe(data);
+          
+          // Process API data to ensure consistency and remove blank spaces
+          setRecipe({
+            ...data,
+            ingredients: processTextArray(data.ingredients),
+            instructions: processTextArray(data.instructions),
+            tags: processTags(data.tags)
+          });
         }
       } catch (error) {
         console.error("Error fetching recipe:", error);
@@ -153,6 +181,11 @@ const RecipeDetail = () => {
   if (!recipe) {
     return <div className="text-center text-lg sm:text-xl mt-10">Recipe not found</div>;
   }
+
+  // Format tags for display
+  const formattedTags = Array.isArray(recipe.tags) && recipe.tags.length > 0 
+    ? recipe.tags.join(', ') 
+    : 'None';
 
   return (
     <div className="min-h-screen bg-softcream">
@@ -226,13 +259,13 @@ const RecipeDetail = () => {
             exit="exit" 
             className={`grid grid-cols-1 sm:grid-cols-2 ${isUserAdded ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-x-4 gap-y-2 text-muteddarkgreen text-lg font-semibold`}>
             <div className="py-1 border-b border-shadowred sm:border-b pb-2">
-              <span className="font-semibold">Calories:</span> {recipe.caloriesPerServing}
+              <span className="font-semibold">Calories:</span> {recipe.caloriesPerServing || 'Not specified'}
             </div>
             <div className="py-1 border-b border-shadowred sm:border-b pb-2">
-              <span className="font-semibold">Meal Type:</span> {recipe.mealType}
+              <span className="font-semibold">Meal Type:</span> {recipe.mealType || 'Not specified'}
             </div>
             <div className="py-1 border-b border-shadowred sm:border-b pb-2">
-              <span className="font-semibold">Category:</span> {Array.isArray(recipe.tags) ? recipe.tags.join(', ') : recipe.tags}
+              <span className="font-semibold">Category:</span> {formattedTags}
             </div>
             {!isUserAdded && (
               <div className="py-1 border-b border-shadowred sm:border-b pb-2">
@@ -255,11 +288,17 @@ const RecipeDetail = () => {
           </h2>
 
           <motion.ul className="list-disc pl-5 text-slategray space-y-2">
-            {Array.isArray(recipe.ingredients) && recipe.ingredients.map((ingredient, index) => (
-              <motion.li key={index} className="text-base sm:text-lg" variants={variants}>
-                {ingredient}
+            {recipe.ingredients && recipe.ingredients.length > 0 ? (
+              recipe.ingredients.map((ingredient, index) => (
+                <motion.li key={index} className="text-base sm:text-lg" variants={variants}>
+                  {ingredient}
+                </motion.li>
+              ))
+            ) : (
+              <motion.li className="text-base sm:text-lg" variants={variants}>
+                No ingredients specified
               </motion.li>
-            ))}
+            )}
           </motion.ul>
         </motion.div>
 
@@ -270,13 +309,21 @@ const RecipeDetail = () => {
           animate="visible"
           exit="exit">
           <h2 className="text-xl sm:text-2xl font-bold text-darkbrown mb-4">
-            Instructions for {recipe.servings || 4} servings
+            Instructions
           </h2>
 
           <motion.ol className="list-decimal pl-5 marker:text-cyan-900 text-slategray space-y-3">
-            {Array.isArray(recipe.instructions) && recipe.instructions.map((instruction, index) => (
-              <motion.li key={index} className="text-base sm:text-lg" variants={variants}>{instruction}</motion.li>
-            ))}
+            {recipe.instructions && recipe.instructions.length > 0 ? (
+              recipe.instructions.map((instruction, index) => (
+                <motion.li key={index} className="text-base sm:text-lg" variants={variants}>
+                  {instruction}
+                </motion.li>
+              ))
+            ) : (
+              <motion.li className="text-base sm:text-lg" variants={variants}>
+                No instructions specified
+              </motion.li>
+            )}
           </motion.ol>
         </motion.div>
       </div>
